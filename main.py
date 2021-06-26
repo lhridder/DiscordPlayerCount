@@ -1,5 +1,8 @@
 import configparser
 import sys
+import time
+from datetime import datetime
+
 import discord
 import redis
 
@@ -57,17 +60,20 @@ async def getplayercount():
         proxyname = "proxy:" + key + ":usersOnline"
         playerlist = redis.smembers(proxyname)
         playercount = playercount + len(playerlist)
-        print(len(playerlist))
-        print(playercount)
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching,
                                                            name=str(playercount) + " spelers"))
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Applied playercount " + str(playercount) + " to bot status at " + current_time)
 
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    getproxies()
-    await getplayercount()
+    while True:
+        getproxies()
+        await getplayercount()
+        time.sleep(60)
 
 # start
 if __name__ == "__main__":
